@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotoSync PRO - Sistem ERP Dealer Motor Bekas</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        navy: {
+                            50: '#f0f4f8',
+                            100: '#d9e2ec',
+                            500: '#334e68',
+                            800: '#102a43',
+                            900: '#0b1d3a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col md:flex-row">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 max-w-sm"></div>
+
+    <!-- AUTH / LOGIN MODAL -->
+    <div id="login-modal" class="fixed inset-0 bg-navy-900/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 space-y-6">
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 mx-auto flex items-center justify-center font-bold text-white text-2xl shadow-lg shadow-blue-500/30">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-slate-900">MotoSync ERP</h3>
+                <p class="text-xs text-slate-500">Silahkan login untuk mengakses portal manajemen dealer</p>
+            </div>
+
+            <form onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                <div id="login-error" class="hidden p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-600 text-xs font-semibold">
+                    Username atau password salah. (Default: admin / admin123)
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Username Admin</label>
+                    <input type="text" id="login-user" required value="admin" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Password</label>
+                    <input type="password" id="login-pass" required value="admin123" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition text-sm">
+                    Masuk Ke Sistem ERP
+                </button>
+            </form>
+            <p class="text-[11px] text-center text-slate-400">Gunakan kredensial default <b>admin</b> / <b>admin123</b></p>
+        </div>
+    </div>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="w-full md:w-64 bg-navy-900 text-white flex-shrink-0 flex flex-col justify-between shadow-xl z-20">
+        <div>
+            <!-- Brand Logo -->
+            <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center font-bold text-white text-xl shadow-lg shadow-blue-500/30">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg tracking-wide leading-none text-white">MotoSync <span class="text-xs px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-mono">PRO</span></h1>
+                        <p class="text-[11px] text-slate-400 mt-1">Sistem ERP Dealer Motor</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-4 py-2.5 bg-navy-800/60 border-b border-slate-800/80">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-slate-400">Lisensi Dealer:</span>
+                    <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-semibold">Dealer Motor Bekas</span>
+                </div>
+            </div>
+
+            <!-- Main Menu Links -->
+            <nav class="p-3 space-y-1">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-white bg-blue-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                    Dashboard Performance
+                </button>
+
+                <button onclick="switchTab('pos')" id="nav-pos" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    Penjualan Unit Motor (POS)
+                </button>
+
+                <button onclick="switchTab('credit')" id="nav-credit" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Kelola Kredit & Cicilan Pelanggan
+                </button>
+
+                <button onclick="switchTab('inventory')" id="nav-inventory" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                    Stok Motor Bekas
+                </button>
+
+                <button onclick="switchTab('finance')" id="nav-finance" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Keuangan & Jurnal Dealer
+                </button>
+            </nav>
+        </div>
+
+        <!-- Footer Control -->
+        <div class="p-4 border-t border-slate-800">
+            <button onclick="resetSystemData()" class="w-full text-xs text-slate-400 hover:text-white hover:bg-slate-800 py-2 rounded transition-colors flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Reset Data Ke Default Dealer
+            </button>
+            <p class="text-[10px] text-center text-slate-500 mt-2">MotoSync Dealer ERP v4.2 • Enterprise Edition</p>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 overflow-y-auto max-h-screen flex flex-col bg-slate-100">
+
+        <!-- Top Header Bar -->
+        <header class="bg-white border-b border-slate-200 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-10 shadow-sm">
+            <div>
+                <h2 id="page-title" class="text-xl font-bold text-slate-800">Dashboard Utama</h2>
+                <p id="page-subtitle" class="text-xs text-slate-500">Ringkasan operasional dan stok showroom sepeda motor bekas</p>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="text-right border-r border-slate-200 pr-4">
+                    <span class="block text-xs font-bold text-slate-700" id="clock-display">00:00:00</span>
+                    <span class="text-[10px] text-slate-400">Koneksi Database: <span class="text-emerald-600 font-semibold">Aktif (Live)</span></span>
+                </div>
+                <div class="relative">
+                    <div onclick="openProfileModal()" class="flex items-center gap-3 cursor-pointer hover:bg-slate-50 p-1.5 rounded-xl transition">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center border border-blue-200">
+                            AD
+                        </div>
+                        <div class="hidden md:block text-left">
+                            <span class="block text-xs font-semibold text-slate-800 leading-none">Admin Utama</span>
+                            <span class="text-[10px] text-slate-500">Dealer Manager</span>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="logoutAdmin()" title="Logout Sesi" class="ml-2 px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg text-xs font-semibold transition flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    Logout
+                </button>
+            </div>
+        </header>
+
+        <div class="p-6 flex-1">
+
+            <!-- TAB 1: DASHBOARD -->
+            <div id="view-dashboard" class="tab-view space-y-6">
+                <!-- Summary Metrics -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <div class="bg-white rounded-xl p-5 border border-slate-200/80 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Kas Direct Dealer</span>
+                            <div class="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-800 mt-2" id="dash-kas">Rp 0</h3>
+                        <p class="text-xs text-emerald-600 mt-1 font-medium">▲ Arus Kas Terkini</p>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-5 border border-slate-200/80 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Piutang Kredit Active</span>
+                            <div class="p-2 rounded-lg bg-blue-50 text-blue-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-800 mt-2" id="dash-piutang">Rp 0</h3>
+                        <p class="text-xs text-slate-500 mt-1">Tagihan Cicilan Pelanggan</p>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-5 border border-slate-200/80 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Stok Motor Ready</span>
+                            <div class="p-2 rounded-lg bg-indigo-50 text-indigo-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-800 mt-2" id="dash-stok-motor">0 Unit</h3>
+                        <p class="text-xs text-slate-500 mt-1">Di Showroom Dealer</p>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-5 border border-slate-200/80 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Penjualan Bulan Ini</span>
+                            <div class="p-2 rounded-lg bg-purple-50 text-purple-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-800 mt-2" id="dash-sold-count">0 Unit</h3>
+                        <p class="text-xs text-purple-600 font-medium mt-1">Total Unit Terjual</p>
+                    </div>
+                </div>
+
+                <!-- Recent Ledger Activities -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200/80 p-5">
+                        <h3 class="font-bold text-slate-800 mb-4 flex items-center justify-between">
+                            <span>Aktivitas Penjualan Unit Terakhir</span>
+                            <span class="text-xs text-blue-600 font-normal cursor-pointer hover:underline" onclick="switchTab('finance')">Lihat Jurnal Lengkap →</span>
+                        </h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-50 text-slate-500 uppercase border-b">
+                                    <tr>
+                                        <th class="py-2.5 px-3">Waktu</th>
+                                        <th class="py-2.5 px-3">Modul</th>
+                                        <th class="py-2.5 px-3">Keterangan Penjualan</th>
+                                        <th class="py-2.5 px-3 text-right">Nilai (Rp)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dash-recent-jurnal" class="divide-y divide-slate-100">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-5 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                                Distribusi Unit Showroom
+                            </h3>
+                            <p class="text-xs text-slate-500 mb-4">Status unit motor ready & terjual</p>
+                            <div id="dash-low-stock-list" class="space-y-2.5">
+                            </div>
+                        </div>
+                        <button onclick="switchTab('inventory')" class="mt-4 w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition">
+                            Kelola Inventaris Motor →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: PENJUALAN & KREDIT (POS) -->
+            <div id="view-pos" class="tab-view hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Motor Selection Grid -->
+                    <div class="lg:col-span-2 space-y-4">
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+                            <h3 class="font-bold text-slate-800 text-sm">Pilih Unit Motor (Showroom Ready)</h3>
+                            <span class="text-xs text-slate-500">Klik unit untuk memproses penjualan</span>
+                        </div>
+                        <div id="pos-motor-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        </div>
+                    </div>
+
+                    <!-- POS Checkout Panel -->
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4 h-fit">
+                        <h3 class="font-bold text-slate-800 border-b pb-2 flex items-center justify-between">
+                            <span>Form Transaksi Penjualan</span>
+                            <span id="pos-selected-badge" class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded">Belum Ada Unit</span>
+                        </h3>
+
+                        <div id="pos-selected-summary" class="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-500">
+                            Silahkan klik salah satu motor yang ready di sebelah kiri untuk memulai kasir POS.
+                        </div>
+
+                        <form id="pos-checkout-form" onsubmit="event.preventDefault(); submitPOSTransaction();" class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Nama Pembeli (Sesuai KTP)</label>
+                                <input type="text" id="pos-cust-name" required placeholder="Contoh: Budi Santoso" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-600 mb-1">NIK KTP</label>
+                                    <input type="text" id="pos-cust-nik" required placeholder="31710..." class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-600 mb-1">No WhatsApp / HP</label>
+                                    <input type="text" id="pos-cust-phone" required placeholder="0812..." class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <div class="pt-2 border-t border-slate-100">
+                                <label class="block text-xs font-medium text-slate-700 mb-2">Metode Skema Pembayaran</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <label class="border rounded-lg p-2 flex items-center gap-2 cursor-pointer hover:bg-slate-50 text-xs font-semibold">
+                                        <input type="radio" name="pay_type" value="CASH" checked onchange="togglePOSPaymentFields()" class="text-blue-600">
+                                        Tunai (CASH)
+                                    </label>
+                                    <label class="border rounded-lg p-2 flex items-center gap-2 cursor-pointer hover:bg-slate-50 text-xs font-semibold">
+                                        <input type="radio" name="pay_type" value="KREDIT" onchange="togglePOSPaymentFields()" class="text-blue-600">
+                                        Kredit / Cicilan
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div id="pos-kredit-box" class="hidden p-3 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-blue-900 mb-1">Uang Muka / DP (Rp)</label>
+                                    <input type="number" id="pos-dp-input" value="5000000" oninput="calculatePOSSimulasi()" class="w-full px-2.5 py-1.5 border border-blue-300 rounded text-sm font-bold text-blue-900 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-blue-900 mb-1">Jangka Waktu (Tenor)</label>
+                                    <select id="pos-tenor-select" onchange="calculatePOSSimulasi()" class="w-full px-2.5 py-1.5 border border-blue-300 rounded text-xs focus:outline-none">
+                                        <option value="12">12 Bulan (1 Tahun)</option>
+                                        <option value="24" selected>24 Bulan (2 Tahun)</option>
+                                        <option value="36">36 Bulan (3 Tahun)</option>
+                                    </select>
+                                </div>
+                                <div class="pt-2 border-t border-blue-200 text-xs space-y-1 text-slate-700">
+                                    <div class="flex justify-between"><span>Pokok Utang Kredit:</span><span id="pos-sim-pokok" class="font-semibold">Rp 0</span></div>
+                                    <div class="flex justify-between font-bold text-blue-900"><span>Angsuran Bulanan:</span><span id="pos-sim-cicilan" class="text-emerald-700">Rp 0 / bln</span></div>
+                                </div>
+                            </div>
+
+                            <button type="submit" id="pos-btn-submit" disabled class="w-full py-2.5 bg-blue-600 disabled:bg-slate-300 hover:bg-blue-700 text-white font-bold rounded-lg transition text-xs shadow">
+                                Proses Penjualan Motor
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: KELOLA KREDIT & CICILAN -->
+            <div id="view-credit" class="tab-view hidden space-y-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">Daftar Kontrak Kredit Pelanggan</h3>
+                        <p class="text-xs text-slate-500">Pantau sisa piutang, bayar cicilan bulanan, edit data, dan hapus kontrak kredit</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 text-slate-600 uppercase border-b">
+                                <tr>
+                                    <th class="py-3 px-4">No Kontrak / Tanggal</th>
+                                    <th class="py-3 px-4">Nama Pembeli (KTP)</th>
+                                    <th class="py-3 px-4">Unit Motor</th>
+                                    <th class="py-3 px-4 text-right">Cicilan / Bulan</th>
+                                    <th class="py-3 px-4 text-right">Sisa Piutang (Rp)</th>
+                                    <th class="py-3 px-4 text-center">Tenor Sisa</th>
+                                    <th class="py-3 px-4 text-center">Status Kredit</th>
+                                    <th class="py-3 px-4 text-center">Aksi (Kelola)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="credit-contracts-list" class="divide-y divide-slate-100">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: INVENTARIS MOTOR BEKAS -->
+            <div id="view-inventory" class="tab-view hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">Daftar Stok Sepeda Motor Bekas</h3>
+                        <p class="text-xs text-slate-500">Kelola unit motor masuk, edit informasi tahun/KM, atau hapus unit</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="openAddMotorModal()" id="btn-add-motor" class="px-3.5 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 shadow transition flex items-center gap-1.5">
+                            + Penerimaan Unit Motor Bekas
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Motor Units Inventory Table -->
+                <div id="inv-sub-motor" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 text-slate-600 uppercase border-b">
+                                <tr>
+                                    <th class="py-3 px-4">Merk & Tipe Motor</th>
+                                    <th class="py-3 px-4">Tahun / KM</th>
+                                    <th class="py-3 px-4">Nomor Rangka (VIN)</th>
+                                    <th class="py-3 px-4">Nomor Mesin</th>
+                                    <th class="py-3 px-4">Warna</th>
+                                    <th class="py-3 px-4">Harga OTR (Rp)</th>
+                                    <th class="py-3 px-4">Status Showroom</th>
+                                    <th class="py-3 px-4 text-center">Aksi (Kelola)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventory-motor-list" class="divide-y divide-slate-100">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: KEUANGAN & JURNAL -->
+            <div id="view-finance" class="tab-view hidden space-y-6">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <span class="text-xs text-slate-400 font-semibold uppercase">Total Kas Direct</span>
+                        <h4 class="text-xl font-bold text-emerald-600 mt-1" id="fin-kas">Rp 0</h4>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <span class="text-xs text-slate-400 font-semibold uppercase">Total Piutang Angsuran</span>
+                        <h4 class="text-xl font-bold text-blue-600 mt-1" id="fin-piutang">Rp 0</h4>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <span class="text-xs text-slate-400 font-semibold uppercase">Total Pendapatan (Omset)</span>
+                        <h4 class="text-xl font-bold text-slate-800 mt-1" id="fin-omset">Rp 0</h4>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <span class="text-xs text-slate-400 font-semibold uppercase">Laba Bersih Dealer</span>
+                        <h4 class="text-xl font-bold text-indigo-600 mt-1" id="fin-laba">Rp 0</h4>
+                    </div>
+                </div>
+
+                <!-- FINANCIAL PROFIT & LOSS REPORT STATEMENT CARD -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-4 gap-3">
+                        <div>
+                            <span class="text-xs font-mono px-2 py-0.5 rounded bg-blue-100 text-blue-700 font-bold">FINANCIAL REPORT</span>
+                            <h3 class="text-lg font-bold text-slate-800 mt-1">Laporan Laba Rugi Komprehensif (Profit & Loss Statement)</h3>
+                            <p class="text-xs text-slate-500">Periode Berjalan Dealer Sepeda Motor Resmi</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="downloadProfitLossPDF()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow transition flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                Cetak / Download Laporan Laba Rugi (PDF)
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                        <!-- PENDAPATAN & HPP -->
+                        <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <h4 class="font-bold text-slate-700 border-b pb-2 text-xs uppercase tracking-wider text-emerald-700">1. Pendapatan Penjualan Motor</h4>
+                            <div class="flex justify-between">
+                                <span class="text-slate-600">Penjualan Motor Tunai (Cash):</span>
+                                <span class="font-semibold text-slate-800" id="pl-cash-sales">Rp 0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-600">Penjualan Motor Kredit (Nilai Unit):</span>
+                                <span class="font-semibold text-slate-800" id="pl-kredit-sales">Rp 0</span>
+                            </div>
+                            <div class="flex justify-between pt-2 border-t font-bold">
+                                <span class="text-slate-800">Total Pendapatan Kotor (Gross Sales):</span>
+                                <span class="text-emerald-600" id="pl-total-sales">Rp 0</span>
+                            </div>
+
+                            <h4 class="font-bold text-slate-700 border-b pb-2 pt-3 text-xs uppercase tracking-wider text-rose-700">2. Harga Pokok Penjualan (HPP Estimasi)</h4>
+                            <div class="flex justify-between">
+                                <span class="text-slate-600">HPP Unit Motor Terjual (85%):</span>
+                                <span class="font-semibold text-slate-800" id="pl-hpp-motor">Rp 0</span>
+                            </div>
+                            <div class="flex justify-between pt-2 border-t font-bold">
+                                <span class="text-slate-800">Laba Kotor (Gross Profit):</span>
+                                <span class="text-blue-600" id="pl-gross-profit">Rp 0</span>
+                            </div>
+                        </div>
+
+                        <!-- BEBAN OPERASIONAL & LABA BERSIH -->
+                        <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col justify-between">
+                            <div class="space-y-3">
+                                <h4 class="font-bold text-slate-700 border-b pb-2 text-xs uppercase tracking-wider text-orange-700">3. Beban Operasional Dealer</h4>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-600">Pengeluaran Beban Jurnal Manual:</span>
+                                    <span class="font-semibold text-slate-800" id="pl-beban-operasional">Rp 0</span>
+                                </div>
+                                <div class="flex justify-between text-xs text-slate-500">
+                                    <span>Estimasi Listrik, Internet & Showroom:</span>
+                                    <span>Termasuk di Jurnal</span>
+                                </div>
+                            </div>
+
+                            <div class="bg-indigo-900 text-white p-4 rounded-xl shadow space-y-1 mt-4">
+                                <span class="text-xs text-slate-300 uppercase font-semibold">Laba / (Rugi) Bersih Dealer</span>
+                                <div class="text-2xl font-extrabold text-emerald-400" id="pl-net-profit">Rp 0</div>
+                                <p class="text-[11px] text-slate-300">Setelah dikurangi estimasi HPP Unit & Pengeluaran Operasional</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                            <h3 class="font-bold text-slate-800">Jurnal Otomatis & Entri Keuangan Dealer</h3>
+                            <p class="text-xs text-slate-500">Rekapitulasi transaksi penjualan, DP kredit, serta pengeluaran operasional</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="openAddJurnalModal()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition">
+                                + Tambah Entri Jurnal
+                            </button>
+                            <button onclick="exportJurnalToCSV()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                Export CSV Jurnal
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 text-slate-600 uppercase border-b">
+                                <tr>
+                                    <th class="py-3 px-4">ID Jurnal</th>
+                                    <th class="py-3 px-4">Waktu</th>
+                                    <th class="py-3 px-4">Modul</th>
+                                    <th class="py-3 px-4">Keterangan Transaksi</th>
+                                    <th class="py-3 px-4 text-right">Debit (Rp)</th>
+                                    <th class="py-3 px-4 text-right">Kredit (Rp)</th>
+                                    <th class="py-3 px-4 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="finance-jurnal-table" class="divide-y divide-slate-100">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- MODAL 1: ADD / EDIT MOTOR UNIT BEKAS -->
+    <div id="modal-add-motor" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
+            <h3 class="font-bold text-slate-800 text-lg border-b pb-2" id="modal-motor-title">Penerimaan Unit Motor Bekas Baru</h3>
+            <form id="form-add-motor" onsubmit="saveMotorForm(event)" class="space-y-3">
+                <input type="hidden" id="m-edit-id" value="">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Merk & Tipe Motor</label>
+                    <input type="text" id="m-name" required placeholder="Contoh: Honda Vario 160 ABS" class="w-full px-3 py-2 border rounded-lg text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Tahun Pembuatan</label>
+                        <input type="number" id="m-year" required placeholder="2021" class="w-full px-3 py-2 border rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Jarak Tempuh (KM)</label>
+                        <input type="number" id="m-km" required placeholder="12500" class="w-full px-3 py-2 border rounded-lg text-sm">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Nomor Rangka (VIN)</label>
+                        <input type="text" id="m-vin" required placeholder="MH1KF11..." class="w-full px-3 py-2 border rounded-lg text-sm font-mono uppercase">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Nomor Mesin</label>
+                        <input type="text" id="m-engine" required placeholder="KF11E..." class="w-full px-3 py-2 border rounded-lg text-sm font-mono uppercase">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Warna Motor</label>
+                        <input type="text" id="m-color" required placeholder="Matte Black" class="w-full px-3 py-2 border rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Harga Jual (Rp)</label>
+                        <input type="number" id="m-price" required placeholder="18500000" class="w-full px-3 py-2 border rounded-lg text-sm font-semibold">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Status Showroom</label>
+                    <select id="m-status" class="w-full px-3 py-2 border rounded-lg text-sm">
+                        <option value="AVAILABLE">Tersedia (Ready Showroom)</option>
+                        <option value="SOLD">Terjual</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-2 pt-3">
+                    <button type="button" onclick="closeModal('modal-add-motor')" class="px-4 py-2 bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700">Simpan Unit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: ADD / EDIT JURNAL KEUANGAN -->
+    <div id="modal-add-jurnal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
+            <h3 class="font-bold text-slate-800 text-lg border-b pb-2" id="modal-jurnal-title">Tambah Entri Jurnal Dealer</h3>
+            <form id="form-add-jurnal" onsubmit="saveJurnalForm(event)" class="space-y-3">
+                <input type="hidden" id="j-edit-id" value="">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Modul Terkait</label>
+                    <select id="j-module" class="w-full px-3 py-2 border rounded-lg text-sm">
+                        <option value="Operasional">Operasional (Beban/Biaya)</option>
+                        <option value="Sales POS">Sales POS (Pendapatan)</option>
+                        <option value="Kas Bank">Kas Bank / Transfer</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Keterangan Transaksi</label>
+                    <input type="text" id="j-desc" required placeholder="Contoh: Pembayaran Listrik & Wifi Showroom" class="w-full px-3 py-2 border rounded-lg text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Debit (Rp)</label>
+                        <input type="number" id="j-debit" value="0" required class="w-full px-3 py-2 border rounded-lg text-sm font-semibold text-emerald-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Kredit (Rp)</label>
+                        <input type="number" id="j-kredit" value="0" required class="w-full px-3 py-2 border rounded-lg text-sm font-semibold text-rose-600">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Tipe Transaksi</label>
+                    <select id="j-type" class="w-full px-3 py-2 border rounded-lg text-sm">
+                        <option value="CASH">Cash / Operasional</option>
+                        <option value="KREDIT">Kredit</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-2 pt-3">
+                    <button type="button" onclick="closeModal('modal-add-jurnal')" class="px-4 py-2 bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700">Simpan Jurnal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: EDIT KONTRAK KREDIT -->
+    <div id="modal-edit-credit" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
+            <h3 class="font-bold text-slate-800 text-lg border-b pb-2">Edit Kontrak Kredit Pelanggan</h3>
+            <form id="form-edit-credit" onsubmit="saveCreditForm(event)" class="space-y-3">
+                <input type="hidden" id="c-edit-id" value="">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Nama Pembeli</label>
+                    <input type="text" id="c-custName" required class="w-full px-3 py-2 border rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">NIK KTP</label>
+                    <input type="text" id="c-custNik" required class="w-full px-3 py-2 border rounded-lg text-sm font-mono">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Nama Unit Motor</label>
+                    <input type="text" id="c-motorName" required class="w-full px-3 py-2 border rounded-lg text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Cicilan / Bulan (Rp)</label>
+                        <input type="number" id="c-cicilanPerBulan" required class="w-full px-3 py-2 border rounded-lg text-sm font-semibold text-blue-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Sisa Piutang (Rp)</label>
+                        <input type="number" id="c-sisaPiutang" required class="w-full px-3 py-2 border rounded-lg text-sm font-semibold text-slate-800">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Sisa Tenor (Bulan)</label>
+                        <input type="number" id="c-sisaTenor" required class="w-full px-3 py-2 border rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Status Kredit</label>
+                        <select id="c-status" class="w-full px-3 py-2 border rounded-lg text-sm">
+                            <option value="KREDIT">Kredit</option>
+                            <option value="LUNAS">LUNAS</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-3">
+                    <button type="button" onclick="closeModal('modal-edit-credit')" class="px-4 py-2 bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: PROFIL AKUN ADMIN -->
+    <div id="modal-profile" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4">
+            <div class="text-center space-y-2">
+                <div class="w-16 h-16 rounded-full bg-blue-100 text-blue-700 font-bold text-xl flex items-center justify-center mx-auto border-2 border-blue-300 shadow">
+                    AD
+                </div>
+                <h3 class="font-bold text-slate-800 text-lg">Admin Utama</h3>
+                <p class="text-xs text-slate-500">Dealer Manager • MotoSync Enterprise</p>
+            </div>
+            <div class="bg-slate-50 p-3 rounded-lg text-xs space-y-2 border">
+                <div class="flex justify-between"><span class="text-slate-500">Username:</span><span class="font-mono font-bold">admin</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Hak Akses:</span><span class="font-semibold text-emerald-600">Full Control (ERP)</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Cabang:</span><span class="font-semibold">Dealer Motor Bekas Pusat</span></div>
+            </div>
+            <div class="flex justify-end pt-2">
+                <button type="button" onclick="closeModal('modal-profile')" class="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg transition">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT STATE & LOGIC -->
+    <script>
+        // Check Auth Session
+        function checkAuthSession() {
+            const isAuth = localStorage.getItem('motosync_admin_auth') === 'true';
+            const authModal = document.getElementById('login-modal');
+            if (authModal) {
+                if (!isAuth) {
+                    authModal.classList.remove('hidden');
+                } else {
+                    authModal.classList.add('hidden');
+                }
+            }
+        }
+
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const u = document.getElementById('login-user').value.trim();
+            const p = document.getElementById('login-pass').value.trim();
+            const err = document.getElementById('login-error');
+
+            if (u === 'admin' && p === 'admin123') {
+                localStorage.setItem('motosync_admin_auth', 'true');
+                document.getElementById('login-modal').classList.add('hidden');
+                err.classList.add('hidden');
+                showToast('Login berhasil! Selamat datang Admin Utama.', 'success');
+                renderAllViews();
+            } else {
+                err.classList.remove('hidden');
+            }
+        }
+
+        function logoutAdmin() {
+            if (confirm('Apakah Anda yakin ingin logout dari sistem ERP?')) {
+                localStorage.removeItem('motosync_admin_auth');
+                showToast('Sesi telah diakhiri. Silahkan login kembali.', 'info');
+                checkAuthSession();
+            }
+        }
+
+        function openProfileModal() {
+            document.getElementById('modal-profile').classList.remove('hidden');
+        }
+
+        const defaultMotors = [
+            { id: 'MTR-01', name: 'Honda Vario 160 CBS', year: 2022, km: 14200, vin: 'MH1KF1118PK092831', engine: 'KF11E1092831', color: 'Grand Matte Black', price: 21500000, status: 'AVAILABLE' },
+            { id: 'MTR-02', name: 'Yamaha NMAX 155 Connected', year: 2021, km: 23000, vin: 'MH3SG5620PK102948', engine: 'G562E2019284', color: 'Prestige Silver', price: 26800000, status: 'AVAILABLE' },
+            { id: 'MTR-03', name: 'Kawasaki KLX 150 SE', year: 2020, km: 18500, vin: 'JKAKLX150PK882910', engine: 'LX150CE09281', color: 'Lime Green', price: 29700000, status: 'AVAILABLE' },
+            { id: 'MTR-04', name: 'Vespa Sprint S 150 i-Get', year: 2022, km: 9800, vin: 'ZAPM81300PK771920', engine: 'M813M3029182', color: 'Yellow Sole', price: 46500000, status: 'AVAILABLE' },
+            { id: 'MTR-05', name: 'Suzuki Satria F150 All New', year: 2019, km: 31000, vin: 'MHSBG4111PK441029', engine: 'BG41E401928', color: 'Titan Black', price: 17600000, status: 'AVAILABLE' }
+        ];
+
+        const defaultJurnal = [
+            { id: 'JRN-1001', date: '2026-10-28 09:15', module: 'Sales POS', desc: 'Penjualan Cash Honda Beat Street 2021 (VIN: MH1JM12...)', debit: 14500000, kredit: 0, dp: 14500000, type: 'CASH' },
+            { id: 'JRN-1002', date: '2026-10-28 11:30', module: 'Operasional', desc: 'Pembayaran Sewa Showroom Bulan Ini', debit: 0, kredit: 12000000, dp: 0, type: 'CASH' }
+        ];
+
+        const defaultCredits = [
+            {
+                id: 'KTR-9001',
+                custName: 'Budi Santoso',
+                custNik: '31710192840192',
+                motorName: 'Yamaha NMAX 155 Connected',
+                otrPrice: 26800000,
+                dp: 5000000,
+                totalPiutang: 25000000,
+                sisaPiutang: 25000000,
+                cicilanPerBulan: 1041666,
+                totalTenor: 24,
+                sisaTenor: 24,
+                status: 'KREDIT'
+            }
+        ];
+
+        let appState = {
+            motors: JSON.parse(localStorage.getItem('motosync_motors_v4')) || defaultMotors,
+            jurnal: JSON.parse(localStorage.getItem('motosync_jurnal_v4')) || defaultJurnal,
+            credits: JSON.parse(localStorage.getItem('motosync_credits_v4')) || defaultCredits,
+            selectedMotorId: null
+        };
+
+        function saveState() {
+            localStorage.setItem('motosync_motors_v4', JSON.stringify(appState.motors));
+            localStorage.setItem('motosync_jurnal_v4', JSON.stringify(appState.jurnal));
+            localStorage.setItem('motosync_credits_v4', JSON.stringify(appState.credits));
+            renderAllViews();
+        }
+
+        function resetSystemData() {
+            if (confirm('Kembalikan seluruh data ke kondisi default dealer motor bekas?')) {
+                localStorage.removeItem('motosync_motors_v4');
+                localStorage.removeItem('motosync_jurnal_v4');
+                localStorage.removeItem('motosync_credits_v4');
+                appState.motors = [...defaultMotors];
+                appState.jurnal = [...defaultJurnal];
+                appState.credits = [...defaultCredits];
+                appState.selectedMotorId = null;
+                saveState();
+                showToast('Database Dealer berhasil direfresh!', 'success');
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
+            const targetView = document.getElementById(`view-${tabId}`);
+            if (targetView) targetView.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('bg-blue-600', 'text-white');
+                el.classList.add('text-slate-300', 'hover:bg-slate-800', 'hover:text-white');
+            });
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                activeNav.classList.remove('text-slate-300', 'hover:bg-slate-800', 'hover:text-white');
+                activeNav.classList.add('bg-blue-600', 'text-white');
+            }
+
+            const titles = {
+                'dashboard': ['Dashboard Performance', 'Ringkasan operasional dan stok showroom motor bekas'],
+                'pos': ['Penjualan Unit Motor & Simulasi Kredit (POS)', 'Kasir penjualan motor bekas cash dan skema kredit internal'],
+                'credit': ['Kelola Kredit & Cicilan Pelanggan', 'Manajemen tagihan angsuran, pembayaran bulanan & kelunasan kredit'],
+                'inventory': ['Stok Sepeda Motor Bekas', 'Manajemen unit motor bekas, penambahan, pengeditan & pelacakan VIN'],
+                'finance': ['Keuangan & Jurnal Dealer', 'Pencatatan kas masuk, piutang cicilan, dan entri operasional dealer']
+            };
+            if (titles[tabId]) {
+                document.getElementById('page-title').innerText = titles[tabId][0];
+                document.getElementById('page-subtitle').innerText = titles[tabId][1];
+            }
+
+            renderAllViews();
+        }
+
+        function formatRP(num) {
+            return 'Rp ' + Number(num || 0).toLocaleString('id-ID');
+        }
+
+        function renderAllViews() {
+            renderDashboard();
+            renderPOS();
+            renderCredits();
+            renderInventory();
+            renderFinance();
+        }
+
+        // --- POS RENDER & LOGIC ---
+        function renderPOS() {
+            const grid = document.getElementById('pos-motor-grid');
+            if (!grid) return;
+
+            const availMotors = appState.motors.filter(m => m.status === 'AVAILABLE');
+
+            if (availMotors.length === 0) {
+                grid.innerHTML = `<div class="col-span-2 bg-white p-8 rounded-xl text-center text-slate-400 text-xs">Tidak ada unit motor ready di showroom saat ini. Tambahkan di menu Inventaris.</div>`;
+                return;
+            }
+
+            grid.innerHTML = availMotors.map(m => `
+                <div onclick="selectMotorForPOS('${m.id}')" class="bg-white rounded-xl p-4 border transition cursor-pointer hover:border-blue-500 hover:shadow-md ${appState.selectedMotorId === m.id ? 'border-2 border-blue-600 bg-blue-50/20' : 'border-slate-200'}">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-sm">${m.name}</h4>
+                            <span class="text-[11px] text-slate-500">Tahun ${m.year} • ${Number(m.km).toLocaleString('id-ID')} KM</span>
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-300">Ready</span>
+                    </div>
+                    <div class="text-xs space-y-0.5 text-slate-500 font-mono mb-3">
+                        <div>VIN: ${m.vin}</div>
+                        <div>Warna: ${m.color}</div>
+                    </div>
+                    <div class="flex justify-between items-center border-t pt-2">
+                        <span class="text-xs text-slate-400">Harga OTR</span>
+                        <span class="font-extrabold text-blue-600 text-sm">${formatRP(m.price)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectMotorForPOS(motorId) {
+            appState.selectedMotorId = motorId;
+            const m = appState.motors.find(item => item.id === motorId);
+            if (!m) return;
+
+            document.getElementById('pos-selected-badge').innerText = 'Unit Dipilih';
+            document.getElementById('pos-selected-badge').className = 'text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded';
+
+            document.getElementById('pos-selected-summary').innerHTML = `
+                <div class="font-bold text-slate-800 text-sm">${m.name}</div>
+                <div class="text-xs text-slate-600 font-semibold mt-1">OTR: ${formatRP(m.price)} | Tahun ${m.year}</div>
+                <div class="text-[11px] text-slate-400 font-mono mt-0.5">VIN: ${m.vin}</div>
+            `;
+
+            document.getElementById('pos-btn-submit').disabled = false;
+            calculatePOSSimulasi();
+            renderPOS();
+        }
+
+        function togglePOSPaymentFields() {
+            const payType = document.querySelector('input[name="pay_type"]:checked').value;
+            const kreditBox = document.getElementById('pos-kredit-box');
+            if (payType === 'KREDIT') {
+                kreditBox.classList.remove('hidden');
+                calculatePOSSimulasi();
+            } else {
+                kreditBox.classList.add('hidden');
+            }
+        }
+
+        function calculatePOSSimulasi() {
+            const m = appState.motors.find(item => item.id === appState.selectedMotorId);
+            if (!m) return;
+
+            const otr = m.price;
+            const dp = parseFloat(document.getElementById('pos-dp-input').value) || 0;
+            const tenor = parseInt(document.getElementById('pos-tenor-select').value) || 24;
+
+            const pokok = Math.max(0, otr - dp);
+            const bungaTotal = pokok * (0.085 * (tenor / 12));
+            const totalPiutang = pokok + bungaTotal;
+            const cicilanBulan = tenor > 0 ? totalPiutang / tenor : 0;
+
+            document.getElementById('pos-sim-pokok').innerText = formatRP(pokok);
+            document.getElementById('pos-sim-cicilan').innerText = `${formatRP(cicilanBulan)} / bln`;
+        }
+
+        // --- INVENTORY RENDER & MODAL ---
+        function renderInventory() {
+            const table = document.getElementById('inventory-motor-list');
+            if (!table) return;
+
+            if (appState.motors.length === 0) {
+                table.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-slate-400">Belum ada data motor. Klik button untuk menambah unit baru.</td></tr>`;
+                return;
+            }
+
+            table.innerHTML = appState.motors.map(m => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="py-3 px-4 font-bold text-slate-800">${m.name}</td>
+                    <td class="py-3 px-4 text-slate-600">${m.year} / ${Number(m.km).toLocaleString('id-ID')} KM</td>
+                    <td class="py-3 px-4 font-mono text-slate-600">${m.vin}</td>
+                    <td class="py-3 px-4 font-mono text-slate-600">${m.engine}</td>
+                    <td class="py-3 px-4 text-slate-600">${m.color}</td>
+                    <td class="py-3 px-4 font-bold text-blue-600">${formatRP(m.price)}</td>
+                    <td class="py-3 px-4">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold ${m.status === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700 border border-emerald-300' : 'bg-slate-100 text-slate-600 border border-slate-300'}">
+                            ${m.status === 'AVAILABLE' ? 'READY SHOWROOM' : 'TERJUAL'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 text-center space-x-2">
+                        <button onclick="editMotorModal('${m.id}')" class="text-blue-600 hover:text-blue-800 font-semibold text-[11px]">Edit</button>
+                        <button onclick="deleteMotor('${m.id}')" class="text-rose-500 hover:text-rose-700 font-semibold text-[11px]">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openAddMotorModal() {
+            document.getElementById('modal-motor-title').innerText = "Penerimaan Unit Motor Bekas Baru";
+            document.getElementById('m-edit-id').value = "";
+            document.getElementById('form-add-motor').reset();
+            document.getElementById('m-status').value = "AVAILABLE";
+            document.getElementById('modal-add-motor').classList.remove('hidden');
+        }
+
+        function editMotorModal(id) {
+            const m = appState.motors.find(item => item.id === id);
+            if (!m) return;
+            document.getElementById('modal-motor-title').innerText = "Edit Detail Unit Motor Bekas";
+            document.getElementById('m-edit-id').value = m.id;
+            document.getElementById('m-name').value = m.name;
+            document.getElementById('m-year').value = m.year;
+            document.getElementById('m-km').value = m.km;
+            document.getElementById('m-vin').value = m.vin;
+            document.getElementById('m-engine').value = m.engine;
+            document.getElementById('m-color').value = m.color;
+            document.getElementById('m-price').value = m.price;
+            document.getElementById('m-status').value = m.status;
+            document.getElementById('modal-add-motor').classList.remove('hidden');
+        }
+
+        function saveMotorForm(e) {
+            e.preventDefault();
+            const editId = document.getElementById('m-edit-id').value;
+
+            if (editId) {
+                const m = appState.motors.find(item => item.id === editId);
+                if (m) {
+                    m.name = document.getElementById('m-name').value.trim();
+                    m.year = parseInt(document.getElementById('m-year').value) || new Date().getFullYear();
+                    m.km = parseInt(document.getElementById('m-km').value) || 0;
+                    m.vin = document.getElementById('m-vin').value.trim().toUpperCase();
+                    m.engine = document.getElementById('m-engine').value.trim().toUpperCase();
+                    m.color = document.getElementById('m-color').value.trim();
+                    m.price = parseFloat(document.getElementById('m-price').value) || 0;
+                    m.status = document.getElementById('m-status').value;
+                    showToast('Data motor berhasil diperbarui!', 'success');
+                }
+            } else {
+                const newMotor = {
+                    id: 'MTR-' + Math.floor(10 + Math.random() * 90),
+                    name: document.getElementById('m-name').value.trim(),
+                    year: parseInt(document.getElementById('m-year').value) || new Date().getFullYear(),
+                    km: parseInt(document.getElementById('m-km').value) || 0,
+                    vin: document.getElementById('m-vin').value.trim().toUpperCase(),
+                    engine: document.getElementById('m-engine').value.trim().toUpperCase(),
+                    color: document.getElementById('m-color').value.trim(),
+                    price: parseFloat(document.getElementById('m-price').value) || 0,
+                    status: document.getElementById('m-status').value || 'AVAILABLE'
+                };
+                appState.motors.push(newMotor);
+                showToast('Unit motor baru berhasil ditambahkan ke showroom!', 'success');
+            }
+
+            saveState();
+            closeModal('modal-add-motor');
+        }
+
+        function deleteMotor(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus unit motor ini dari inventaris?')) {
+                appState.motors = appState.motors.filter(m => m.id !== id);
+                if (appState.selectedMotorId === id) appState.selectedMotorId = null;
+                saveState();
+                showToast('Unit motor telah dihapus dari sistem.', 'info');
+            }
+        }
+
+        // --- DASHBOARD RENDER ---
+        function renderDashboard() {
+            let totalKas = 0;
+            appState.jurnal.forEach(j => {
+                totalKas += ((j.debit || 0) - (j.kredit || 0));
+            });
+
+            let totalPiutang = appState.credits
+                .filter(c => c.status === 'KREDIT')
+                .reduce((acc, c) => acc + (c.sisaPiutang || 0), 0);
+
+            document.getElementById('dash-kas').innerText = formatRP(totalKas);
+            document.getElementById('dash-piutang').innerText = formatRP(totalPiutang);
+
+            const availMotors = appState.motors.filter(m => m.status === 'AVAILABLE');
+            const soldMotors = appState.motors.filter(m => m.status === 'SOLD');
+
+            document.getElementById('dash-stok-motor').innerText = `${availMotors.length} Unit`;
+            document.getElementById('dash-sold-count').innerText = `${soldMotors.length} Unit`;
+
+            const recentHtml = appState.jurnal.slice(-5).reverse().map(j => `
+                <tr>
+                    <td class="py-2.5 px-3 text-slate-500">${j.date}</td>
+                    <td class="py-2.5 px-3 font-semibold text-blue-600">${j.module}</td>
+                    <td class="py-2.5 px-3 font-medium text-slate-700">${j.desc}</td>
+                    <td class="py-2.5 px-3 text-right font-bold text-slate-800">${formatRP(j.debit || j.kredit)}</td>
+                </tr>
+            `).join('');
+            document.getElementById('dash-recent-jurnal').innerHTML = recentHtml || `<tr><td colspan="4" class="text-center py-4 text-slate-400">Belum ada transaksi</td></tr>`;
+
+            document.getElementById('dash-low-stock-list').innerHTML = `
+                <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs space-y-1.5">
+                    <div class="flex justify-between font-bold text-blue-900">
+                        <span>Unit Motor Ready Showroom:</span>
+                        <span>${availMotors.length} Motor</span>
+                    </div>
+                    <div class="flex justify-between text-slate-600">
+                        <span>Total Unit Terjual:</span>
+                        <span class="font-semibold text-purple-700">${soldMotors.length} Motor</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- CREDIT MANAGEMENT RENDER ---
+        function renderCredits() {
+            const table = document.getElementById('credit-contracts-list');
+            if (!table) return;
+
+            if (appState.credits.length === 0) {
+                table.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-slate-400">Belum ada kontrak kredit pelanggan aktif.</td></tr>`;
+                return;
+            }
+
+            table.innerHTML = appState.credits.map(c => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="py-3 px-4 font-mono font-bold text-slate-700">${c.id}</td>
+                    <td class="py-3 px-4">
+                        <span class="font-bold text-slate-800">${c.custName}</span>
+                        <span class="block text-[11px] text-slate-400 font-mono">NIK: ${c.custNik}</span>
+                    </td>
+                    <td class="py-3 px-4 font-medium text-slate-700">${c.motorName}</td>
+                    <td class="py-3 px-4 text-right font-bold text-blue-600">${formatRP(c.cicilanPerBulan)}</td>
+                    <td class="py-3 px-4 text-right font-bold text-slate-800">${formatRP(c.sisaPiutang)}</td>
+                    <td class="py-3 px-4 text-center font-medium">${c.sisaTenor} / ${c.totalTenor} Bln</td>
+                    <td class="py-3 px-4 text-center">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold ${c.status === 'LUNAS' ? 'bg-emerald-100 text-emerald-700 border border-emerald-300' : 'bg-amber-100 text-amber-700 border border-amber-300'}">
+                            ${c.status === 'LUNAS' ? '✓ LUNAS' : '● KREDIT'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        <div class="flex items-center justify-center gap-2">
+                            <button onclick="editCreditModal('${c.id}')" class="text-blue-600 hover:text-blue-800 font-semibold text-[11px]">Edit</button>
+                            <button onclick="deleteCredit('${c.id}')" class="text-rose-500 hover:text-rose-700 font-semibold text-[11px]">Hapus</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function editCreditModal(id) {
+            const c = appState.credits.find(item => item.id === id);
+            if (!c) return;
+            document.getElementById('c-edit-id').value = c.id;
+            document.getElementById('c-custName').value = c.custName;
+            document.getElementById('c-custNik').value = c.custNik;
+            document.getElementById('c-motorName').value = c.motorName;
+            document.getElementById('c-cicilanPerBulan').value = c.cicilanPerBulan;
+            document.getElementById('c-sisaPiutang').value = c.sisaPiutang;
+            document.getElementById('c-sisaTenor').value = c.sisaTenor;
+            document.getElementById('c-status').value = c.status;
+            document.getElementById('modal-edit-credit').classList.remove('hidden');
+        }
+
+        // --- FIXED SAVE CREDIT FORM DENGAN AUTO JURNAL PELUNASAN ---
+        function saveCreditForm(e) {
+            e.preventDefault();
+            const editId = document.getElementById('c-edit-id').value;
+            const c = appState.credits.find(item => item.id === editId);
+            
+            if (c) {
+                const oldStatus = c.status;
+                const sisaPiutangSebelumnya = c.sisaPiutang;
+
+                c.custName = document.getElementById('c-custName').value.trim();
+                c.custNik = document.getElementById('c-custNik').value.trim();
+                c.motorName = document.getElementById('c-motorName').value.trim();
+                c.cicilanPerBulan = parseFloat(document.getElementById('c-cicilanPerBulan').value) || 0;
+                c.sisaPiutang = parseFloat(document.getElementById('c-sisaPiutang').value) || 0;
+                c.sisaTenor = parseInt(document.getElementById('c-sisaTenor').value) || 0;
+                c.status = document.getElementById('c-status').value;
+
+                // Jika status diubah dari KREDIT menjadi LUNAS, otomatis catat pelunasan ke Jurnal Keuangan
+                if (oldStatus !== 'LUNAS' && c.status === 'LUNAS') {
+                    const nilaiPelunasan = sisaPiutangSebelumnya > 0 ? sisaPiutangSebelumnya : (c.totalPiutang || 0);
+                    c.sisaPiutang = 0;
+                    c.sisaTenor = 0;
+
+                    // Tambahkan otomatis ke Jurnal Keuangan (Kas Masuk)
+                    appState.jurnal.push({
+                        id: 'JRN-' + Math.floor(1000 + Math.random() * 9000),
+                        date: new Date().toLocaleString('id-ID'),
+                        module: 'Sales POS',
+                        desc: `Pelunasan Kredit Kontrak ${c.id} - ${c.motorName} (${c.custName})`,
+                        debit: nilaiPelunasan,
+                        kredit: 0,
+                        dp: nilaiPelunasan,
+                        type: 'CASH'
+                    });
+                }
+
+                saveState();
+                showToast('Kontrak kredit dan jurnal pelunasan berhasil diperbarui!', 'success');
+            }
+            closeModal('modal-edit-credit');
+        }
+
+        function deleteCredit(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus kontrak kredit ini?')) {
+                appState.credits = appState.credits.filter(c => c.id !== id);
+                saveState();
+                showToast('Kontrak kredit berhasil dihapus.', 'info');
+            }
+        }
+
+        // --- SUBMIT POS TRANSACTION WITH CREDIT CONTRACT ---
+        function submitPOSTransaction() {
+            const motor = appState.motors.find(m => m.id === appState.selectedMotorId);
+            if (!motor) {
+                showToast('Pilih unit sepeda motor terlebih dahulu!', 'error');
+                return;
+            }
+
+            const custName = document.getElementById('pos-cust-name').value.trim();
+            const custNik = document.getElementById('pos-cust-nik').value.trim();
+            const custPhone = document.getElementById('pos-cust-phone').value.trim();
+
+            if (!custName || !custNik || !custPhone) {
+                showToast('Lengkapi data pembeli motor (Nama, NIK, No HP)', 'error');
+                return;
+            }
+
+            const payType = document.querySelector('input[name="pay_type"]:checked').value;
+            let debitValue = motor.price;
+            let dpValue = motor.price;
+            let desc = `Penjualan Cash Motor Bekas ${motor.name} ${motor.year || ''} (VIN: ${motor.vin}) - Pembeli: ${custName}`;
+
+            if (payType === 'KREDIT') {
+                const dp = parseFloat(document.getElementById('pos-dp-input').value) || 0;
+                const tenor = parseInt(document.getElementById('pos-tenor-select').value);
+                
+                const otr = motor.price;
+                const pokok = otr - dp;
+                const bungaTotal = pokok * (0.085 * (tenor / 12));
+                const totalPiutang = pokok + bungaTotal;
+                const cicilanBulan = totalPiutang / tenor;
+
+                debitValue = dp; 
+                dpValue = dp;
+                desc = `Penjualan Kredit Motor Bekas ${motor.name} (DP Kas: ${formatRP(dp)}, Piutang: ${formatRP(totalPiutang)}) - Pembeli: ${custName}`;
+
+                appState.credits.push({
+                    id: 'KTR-' + Math.floor(1000 + Math.random() * 9000),
+                    custName: custName,
+                    custNik: custNik,
+                    motorName: motor.name,
+                    otrPrice: otr,
+                    dp: dp,
+                    totalPiutang: totalPiutang,
+                    sisaPiutang: totalPiutang,
+                    cicilanPerBulan: cicilanBulan,
+                    totalTenor: tenor,
+                    sisaTenor: tenor,
+                    status: 'KREDIT'
+                });
+            }
+
+            motor.status = 'SOLD';
+
+            appState.jurnal.push({
+                id: 'JRN-' + Math.floor(1000 + Math.random() * 9000),
+                date: new Date().toLocaleString('id-ID'),
+                module: 'Sales POS',
+                desc: desc,
+                debit: debitValue,
+                otrPrice: motor.price,
+                kredit: 0,
+                dp: dpValue,
+                type: payType
+            });
+
+            document.getElementById('pos-checkout-form').reset();
+            appState.selectedMotorId = null;
+            saveState();
+
+            showToast(`Penjualan Motor ${motor.name} Berhasil Diproses!`, 'success');
+            switchTab(payType === 'KREDIT' ? 'credit' : 'finance');
+        }
+
+        // --- FINANCE RENDER & PROFIT-LOSS CALCULATIONS ---
+        function renderFinance() {
+            let totalKas = 0;
+            let totalOmset = 0;
+            let totalCashSales = 0;
+            let totalKreditSales = 0;
+            let totalBeban = 0;
+
+            appState.jurnal.forEach(j => {
+                const otr = j.otrPrice || j.debit || 0;
+                totalOmset += otr;
+
+                totalKas += ((j.debit || 0) - (j.kredit || 0));
+
+                if (j.type === 'CASH' && j.debit > 0) totalCashSales += j.debit;
+                if (j.type === 'KREDIT') totalKreditSales += otr;
+                if (j.kredit > 0) totalBeban += j.kredit;
+            });
+
+            const hppMotor = totalOmset * 0.85;
+            const grossProfit = totalOmset - hppMotor;
+            const netProfit = grossProfit - totalBeban;
+
+            let totalPiutang = appState.credits
+                .filter(c => c.status === 'KREDIT')
+                .reduce((acc, c) => acc + (c.sisaPiutang || 0), 0);
+
+            document.getElementById('fin-kas').innerText = formatRP(totalKas);
+            document.getElementById('fin-piutang').innerText = formatRP(totalPiutang);
+            document.getElementById('fin-omset').innerText = formatRP(totalOmset);
+            document.getElementById('fin-laba').innerText = formatRP(netProfit);
+
+            document.getElementById('pl-cash-sales').innerText = formatRP(totalCashSales);
+            document.getElementById('pl-kredit-sales').innerText = formatRP(totalKreditSales);
+            document.getElementById('pl-total-sales').innerText = formatRP(totalOmset);
+            document.getElementById('pl-hpp-motor').innerText = formatRP(hppMotor);
+            document.getElementById('pl-gross-profit').innerText = formatRP(grossProfit);
+            document.getElementById('pl-beban-operasional').innerText = formatRP(totalBeban);
+            document.getElementById('pl-net-profit').innerText = formatRP(netProfit);
+
+            const jurnalTable = document.getElementById('finance-jurnal-table');
+            if (!jurnalTable) return;
+            jurnalTable.innerHTML = appState.jurnal.slice().reverse().map(j => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="py-3 px-4 font-mono font-bold text-slate-600">${j.id}</td>
+                    <td class="py-3 px-4 text-slate-500">${j.date}</td>
+                    <td class="py-3 px-4 font-bold text-blue-600">${j.module}</td>
+                    <td class="py-3 px-4 text-slate-700">${j.desc}</td>
+                    <td class="py-3 px-4 text-right font-bold text-emerald-600">
+                        ${formatRP(j.debit)}
+                    </td>
+                    <td class="py-3 px-4 text-right font-bold text-rose-600">${formatRP(j.kredit)}</td>
+                    <td class="py-3 px-4 text-center space-x-2">
+                        <button onclick="editJurnal('${j.id}')" class="text-blue-600 hover:text-blue-800 font-semibold text-[11px]">Edit</button>
+                        <button onclick="deleteJurnal('${j.id}')" class="text-rose-500 hover:text-rose-700 font-semibold text-[11px]">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function downloadProfitLossPDF() {
+            let totalOmset = 0;
+            let totalBeban = 0;
+            let cashSales = 0;
+            let kreditSales = 0;
+
+            appState.jurnal.forEach(j => {
+                totalOmset += (j.debit || 0);
+                if (j.kredit > 0) totalBeban += j.kredit;
+                if (j.type === 'CASH' && j.debit > 0) cashSales += j.debit;
+                if (j.type === 'KREDIT' && j.debit > 0) kreditSales += j.debit;
+            });
+
+            const hpp = totalOmset * 0.85;
+            const gross = totalOmset - hpp;
+            const net = gross - totalBeban;
+
+            const printWin = window.open('', '', 'width=800,height=900');
+            printWin.document.write(`
+                <html>
+                <head>
+                    <title>Laporan Laba Rugi - MotoSync ERP Dealer Motor</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 40px; color: #1e293b; }
+                        .header { border-bottom: 3px solid #0b1d3a; padding-bottom: 15px; margin-bottom: 25px; }
+                        .title { font-size: 22px; font-weight: bold; color: #0b1d3a; }
+                        .subtitle { font-size: 13px; color: #64748b; margin-top: 4px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+                        th, td { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid #e2e8f0; }
+                        th { text-align: left; background: #f8fafc; color: #475569; }
+                        .text-right { text-align: right; }
+                        .font-bold { font-weight: bold; }
+                        .highlight { background: #e0e7ff; font-size: 15px; font-weight: bold; }
+                        .footer { margin-top: 40px; font-size: 11px; text-align: center; color: #94a3b8; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div class="title">MOTOSYNC ERP - DEALER MOTOR RESMI</div>
+                        <div class="subtitle">LAPORAN LABA RUGI KOMPREHENSIF (PROFIT & LOSS STATEMENT)</div>
+                        <div class="subtitle">Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')} | Otorisasi: Admin Utama</div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Kategori Laporan Keuangan</th>
+                                <th class="text-right">Jumlah (Rp)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-bold">1. PENDAPATAN OPERASIONAL DEALER</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left: 25px;">Penjualan Sepeda Motor Tunai (Cash Direct)</td>
+                                <td class="text-right">${formatRP(cashSales)}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left: 25px;">Penjualan Sepeda Motor Skema Kredit (Nilai Kontrak)</td>
+                                <td class="text-right">${formatRP(kreditSales)}</td>
+                            </tr>
+                            <tr class="font-bold">
+                                <td>TOTAL PENDAPATAN KOTOR (GROSS REVENUE)</td>
+                                <td class="text-right">${formatRP(totalOmset)}</td>
+                            </tr>
+                            <tr><td colspan="2"></td></tr>
+                            <tr>
+                                <td class="font-bold">2. HARGA POKOK PENJUALAN (HPP)</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left: 25px;">Estimasi HPP Unit Sepeda Motor (85%)</td>
+                                <td class="text-right">(${formatRP(hpp)})</td>
+                            </tr>
+                            <tr class="font-bold">
+                                <td>LABA KOTOR (GROSS PROFIT)</td>
+                                <td class="text-right">${formatRP(gross)}</td>
+                            </tr>
+                            <tr><td colspan="2"></td></tr>
+                            <tr>
+                                <td class="font-bold">3. BEBAN OPERASIONAL SHOWROOM</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left: 25px;">Beban Operasional Jurnal Manual (Listrik, Sewa, Overhead)</td>
+                                <td class="text-right">(${formatRP(totalBeban)})</td>
+                            </tr>
+                            <tr class="highlight">
+                                <td>LABA BERSIH DEALER (NET PROFIT AFTER TAX/EXPENSE)</td>
+                                <td class="text-right">${formatRP(net)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div style="margin-top: 50px; display: flex; justify-content: space-between;">
+                        <div style="text-align: center; font-size: 12px;">
+                            <p>Dibuat Oleh,</p>
+                            <br><br><br>
+                            <p><b>Admin Operational Dealer</b></p>
+                        </div>
+                        <div style="text-align: center; font-size: 12px;">
+                            <p>Disetujui Oleh,</p>
+                            <br><br><br>
+                            <p><b>Dealer Owner / General Manager</b></p>
+                        </div>
+                    </div>
+
+                    <div class="footer">
+                        Dokumen resmi diterbitkan otomatis oleh MotoSync ERP Enterprise System.
+                    </div>
+                </body>
+                </html>
+            `);
+            printWin.document.close();
+            printWin.focus();
+            setTimeout(() => { printWin.print(); }, 500);
+            showToast('Laporan Laba Rugi siap dicetak / disimpan sebagai PDF!', 'success');
+        }
+
+        function openAddJurnalModal() {
+            document.getElementById('modal-jurnal-title').innerText = "Tambah Entri Jurnal Dealer";
+            document.getElementById('j-edit-id').value = "";
+            document.getElementById('form-add-jurnal').reset();
+            document.getElementById('modal-add-jurnal').classList.remove('hidden');
+        }
+
+        function editJurnal(id) {
+            const j = appState.jurnal.find(item => item.id === id);
+            if (!j) return;
+            document.getElementById('modal-jurnal-title').innerText = "Edit Entri Jurnal";
+            document.getElementById('j-edit-id').value = j.id;
+            document.getElementById('j-module').value = j.module;
+            document.getElementById('j-desc').value = j.desc;
+            document.getElementById('j-debit').value = j.debit;
+            document.getElementById('j-kredit').value = j.kredit;
+            document.getElementById('j-type').value = j.type || 'CASH';
+            document.getElementById('modal-add-jurnal').classList.remove('hidden');
+        }
+
+        function saveJurnalForm(e) {
+            e.preventDefault();
+            const editId = document.getElementById('j-edit-id').value;
+
+            if (editId) {
+                const j = appState.jurnal.find(item => item.id === editId);
+                if (j) {
+                    j.module = document.getElementById('j-module').value;
+                    j.desc = document.getElementById('j-desc').value;
+                    j.debit = parseFloat(document.getElementById('j-debit').value) || 0;
+                    j.kredit = parseFloat(document.getElementById('j-kredit').value) || 0;
+                    j.type = document.getElementById('j-type').value;
+                    showToast('Jurnal keuangan berhasil diperbarui!', 'success');
+                }
+            } else {
+                const newJ = {
+                    id: 'JRN-' + Math.floor(1000 + Math.random() * 9000),
+                    date: new Date().toLocaleString('id-ID'),
+                    module: document.getElementById('j-module').value,
+                    desc: document.getElementById('j-desc').value,
+                    debit: parseFloat(document.getElementById('j-debit').value) || 0,
+                    kredit: parseFloat(document.getElementById('j-kredit').value) || 0,
+                    dp: 0,
+                    type: document.getElementById('j-type').value
+                };
+                appState.jurnal.push(newJ);
+                showToast('Entri Jurnal Baru Tersimpan!', 'success');
+            }
+
+            saveState();
+            closeModal('modal-add-jurnal');
+        }
+
+        function deleteJurnal(id) {
+            if (confirm('Hapus entri jurnal keuangan ini?')) {
+                appState.jurnal = appState.jurnal.filter(j => j.id !== id);
+                saveState();
+                showToast('Entri jurnal dihapus.', 'info');
+            }
+        }
+
+        function exportJurnalToCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,ID,Waktu,Modul,Keterangan,Debit,Kredit\n";
+            appState.jurnal.forEach(j => {
+                csvContent += `${j.id},"${j.date}",${j.module},"${j.desc}",${j.debit},${j.kredit}\n`;
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "Laporan_Jurnal_Dealer_Motor.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('Laporan Jurnal berhasil di-export ke CSV!', 'info');
+        }
+
+        // --- UTILITY MODALS & TOASTS ---
+        function closeModal(id) { 
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden');
+        }
+
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            
+            const bgColors = {
+                success: 'bg-emerald-600 text-white',
+                error: 'bg-rose-600 text-white',
+                info: 'bg-slate-800 text-white'
+            };
+
+            toast.className = `${bgColors[type]} px-4 py-3 rounded-xl shadow-xl text-xs font-semibold flex items-center justify-between gap-3 animate-bounce transition`;
+            toast.innerHTML = `<span>${msg}</span><button onclick="this.parentElement.remove()" class="text-white font-bold">&times;</button>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        setInterval(() => {
+            const clock = document.getElementById('clock-display');
+            if (clock) clock.innerText = new Date().toLocaleTimeString('id-ID');
+        }, 1000);
+
+        window.onload = function() {
+            checkAuthSession();
+            renderAllViews();
+        };
+    </script>
+</body>
+</html>
